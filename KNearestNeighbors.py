@@ -75,7 +75,7 @@ classifier = My_KNN()
 # Store the averages in an array
 averages_array = []
 
-# Hyperparameter tuning to choose K using K Fold cross validation
+# Hyperparameter tuning to choose K using K-Fold cross validation
 # Low values of k are prone to overfitting, while high values of k
 # are succeptible to high bais. 
 for k in range (1,len(x)//2):
@@ -105,7 +105,9 @@ best_index = argmax(averages_array) + 1
 
 print("The best K is: %d" % best_index)
 
-# Validate K
+# For this dataset, the best K seems to be 5. 5 nearest neighbors seems to be reasonable
+# since it is not to small and not too large, thus our bias and variance are both 
+# decently low. 
 
 # Splits the 2 arrays (x, y) into random train and test subsets
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = .5)
