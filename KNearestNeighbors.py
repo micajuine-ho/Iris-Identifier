@@ -58,9 +58,9 @@ class My_KNN():
         return collections.Counter(most_occuring_targets).most_common(1)[0][0]
 
 from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold, train_test_split
 from sklearn.metrics import accuracy_score
-import numpy as nump
+from numpy import argmax
 
 # Load data
 iris = load_iris()
@@ -69,20 +69,52 @@ iris = load_iris()
 x = iris.data
 y = iris.target
 
-# Splits the 2 arrays (x, y) into random train and test subsets
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = .5)
-
 # Initialize classifier
 classifier = My_KNN() 
+
+# Store the averages in an array
+averages_array = []
+
+# Hyperparameter tuning to choose K using K Fold cross validation
+# Low values of k are prone to overfitting, while high values of k
+# are succeptible to high bais. 
+for k in range (1,len(x)//2):
+    # The 150 data points will be tested in sections of 30
+    # Important to shuffle here so that the iris data is split into random groups
+    kf = KFold(n_splits=5, shuffle=True, random_state = 12882) 
+    average_prediction_score = 0
+    for (train_index, test_index) in kf.split(x):
+
+        x_train, x_test = x[train_index], x[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        
+        # Fit the training data
+        classifier.fit(x_train, y_train)
+
+        # Make predicition using classifier and test data
+        predicition = classifier.predict(x_test, k)
+
+        # Find accuracy score add to -runing average
+        average_prediction_score = average_prediction_score + accuracy_score(predicition, y_test)
+    
+    #Take the average of the accuracy of all the predictions and append to array 
+    averages_array.append(average_prediction_score/5)
+
+# Find the max average prediction score and return the index + 1 which is the best K
+best_index = argmax(averages_array) + 1
+
+print("The best K is: %d" % best_index)
+
+# Validate K
+
+# Splits the 2 arrays (x, y) into random train and test subsets
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = .5)
 
 # Fit the training data
 classifier.fit(x_train, y_train)
 
 # Make predicition using classifier and test data
-predicition = classifier.predict(x_test, 3)
+predicition = classifier.predict(x_test, best_index)
 
-# print(predicition)
-# print(y_test)
-
-# Validation 
+# Validation
 print (accuracy_score(predicition, y_test))
